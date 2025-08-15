@@ -1,4 +1,5 @@
 services:
+    # 2) SQL Server 2022
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mssql2022
@@ -9,11 +10,35 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      # volume nomeado único para toda a pasta /var/opt/mssql
-      - mssql_root:/var/opt/mssql
-      # bind mount somente para os .bak (leitura)
-      - ../backups:/var/opt/mssql/backups
+      - mssql_root:/var/opt/mssql                     # dados persistentes
+      - mssql_backups:/var/opt/mssql/backups          # .bak do seedbak
+      - ./restore_bak.sql:/var/opt/mssql/restore_bak.sql:ro
+    depends_on:
+      seedbak:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
     restart: unless-stopped
+
+  # 3) Restaura automaticamente quando o SQL estiver saudável (roda uma vez e sai)
+  restore:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      mssql:
+        condition: service_healthy
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SenhaForte123
+    volumes:
+      - mssql_backups:/var/opt/mssql/backups
+      - ./restore_bak.sql:/var/opt/mssql/restore_bak.sql:ro
+    entrypoint: >
+      bash -lc "/opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P '$$MSSQL_SA_PASSWORD' -C -i /var/opt/mssql/restore_bak.sql
+      || /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P '$$MSSQL_SA_PASSWORD' -i /var/opt/mssql/restore_bak.sql"
 
 volumes:
   mssql_root:
+  mssql_backups:
