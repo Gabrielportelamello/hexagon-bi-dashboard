@@ -1,0 +1,15 @@
+# Python / build
+.venv/
+__pycache__/
+*.pyc
+
+# Streamlit secrets (apenas exemplo vai para o repo)
+.streamlit/secrets.toml
+
+# Dados grandes
+backups/
+*.bak
+
+# IDEs
+.vscode/
+.idea/

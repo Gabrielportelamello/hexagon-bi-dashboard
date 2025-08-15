@@ -1,0 +1,19 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql2022
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Developer
+      - MSSQL_SA_PASSWORD=SenhaForte123
+    ports:
+      - "1433:1433"
+    volumes:
+      # volume nomeado único para toda a pasta /var/opt/mssql
+      - mssql_root:/var/opt/mssql
+      # bind mount somente para os .bak (leitura)
+      - ../backups:/var/opt/mssql/backups
+    restart: unless-stopped
+
+volumes:
+  mssql_root:
