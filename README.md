@@ -11,8 +11,8 @@ Antes de começar, você precisa ter instalado e configurado:
 - Qualquer problema com wsl consultar se esta atualizado.
 
 ## 1 Clonar o repositório
-git clone https://github.com/Gabrielportelamello/hexagon-bi-dashboard.git
-cd hexagon-bi-dashboard
+- git clone https://github.com/Gabrielportelamello/hexagon-bi-dashboard.git
+- cd hexagon-bi-dashboard
 
 ## 2 Baixar o arquivo .bak do AdventureWorks
 
