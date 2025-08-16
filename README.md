@@ -1,47 +1,71 @@
-Streamlit Sales Dashboard — AdventureWorks
+# Instruções para rodar o projeto
 
-Mini painel de vendas feito com Streamlit + Plotly + Pandas usando o banco AdventureWorks no SQL Server.
-Permite filtrar por período, categoria e região, mostra KPIs e visualizações interativas (receita por dia/produto, nº de vendas por dia/categoria, receita por região e por mês), além de um detalhe tabular dos dados filtrados.
+## 1 Clonar o repositório
+git clone https://github.com/Gabrielportelamello/hexagon-bi-dashboard.git
+cd hexagon-bi-dashboard
 
-✅ O que foi entregue (critérios do teste)
+## 2 Baixar o arquivo .bak do AdventureWorks
 
-Consulta SQL otimizada (queries.sql) juntando SalesOrderHeader/Detail, Product, Category, Address/Region.
+### Windows PowerShell (recomendado):
 
-Manipulação com Pandas (agregações, cálculo de YearMonth, filtros reativos).
+Invoke-WebRequest `
+  -Uri https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak `
+  -OutFile .\backups\AdventureWorks2022.bak
 
-Visualizações úteis (linhas, barras horizontais com scroll, área), em pt-BR.
 
-Usabilidade: KPIs em “caixas”, seções colapsáveis, filtros práticos e responsivos.
+### Windows CMD:
 
-Entrega: repositório com código-fonte + instruções claras para rodar.
+curl.exe -L -o backups\AdventureWorks2022.bak ^
+  https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak
 
-Requisitos
 
-Docker e Docker Compose
+### Linux/macOS:
 
-Python 3.11+ (para o app)
+curl -L -o backups/AdventureWorks2022.bak \
+  https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak
 
-ODBC 18 para SQL Server (no host, se usar Linux/WSL):
+## 3️ Subir o container do SQL Server
 
-git clone https://github.com/seuuser/streamlit_dashboard.git
-cd streamlit_dashboard
+### Windows (PowerShell/CMD):
+
+docker compose -f docker\mssql-compose.yml up -d --build
+
+
+### Linux/macOS:
+
 docker compose -f docker/mssql-compose.yml up -d --build
 
-
-Acesse: http://localhost:8501
-
-Estrutura do projeto
-.
-├─ app.py                   # App Streamlit (UI, gráficos, KPIs)
-├─ db.py                    # Conexão com SQL Server (SQLAlchemy/pyodbc)
-├─ queries.sql              # Consulta SQL principal (joins e filtros)
-├─ requirements.txt         # Dependências Python
-├─ README.md
-├─ .streamlit/
-│  ├─ secrets.toml          # (local, não versionar)
-│  └─ secrets.example.toml  # modelo sem senha
-└─ docker/
-   ├─ mssql-compose.yml     # SQL Server + volumes
-   └─ restore_bak.sql       # Script de restore do .bak
+## 4️ Copiar o .bak para dentro do container
+docker cp .\backups\AdventureWorks2022.bak mssql2022:/var/opt/mssql/backups/
 
 
+
+⚠ Importante: O nome mssql deve ser igual ao container_name configurado no docker-compose.yml.
+Para confirmar, rode:
+
+docker ps
+
+## 5️ Restaurar o banco SalesDB
+
+docker compose -f docker\mssql-compose.yml exec mssql /opt/mssql-tools18/bin/sqlcmd `
+  -S localhost -U sa -P 'SenhaForte123' -C -Q "
+RESTORE DATABASE [SalesDB]
+FROM DISK = N'/var/opt/mssql/backups/AdventureWorks2022.bak'
+WITH
+    MOVE N'AdventureWorks2022'     TO N'/var/opt/mssql/data/SalesDB.mdf',
+    MOVE N'AdventureWorks2022_log' TO N'/var/opt/mssql/data/SalesDB_log.ldf',
+    REPLACE, RECOVERY, STATS = 5;"
+
+## 6️ Conferir se o banco foi restaurado
+
+docker compose -f docker\mssql-compose.yml exec mssql /opt/mssql-tools18/bin/sqlcmd `
+  -S localhost -U sa -P 'SenhaForte123' -C -Q "SELECT name FROM sys.databases"
+
+
+Você deve ver SalesDB na lista.
+
+## 7️ Abrir o app no navegador
+
+Depois que o banco estiver restaurado, acesse:
+
+http://localhost:8501

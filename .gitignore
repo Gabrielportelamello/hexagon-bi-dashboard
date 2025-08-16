@@ -4,8 +4,8 @@ __pycache__/
 *.pyc
 
 # Dados grandes
-backups/
-*.bak
+backups/*
+!backups/.gitkeep
 
 # IDEs
 .vscode/
