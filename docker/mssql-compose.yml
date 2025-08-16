@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -11,7 +13,6 @@ services:
     volumes:
       - mssql_root:/var/opt/mssql
       - ../backups:/var/opt/mssql/backups
-      - ./restore_bak.sql:/var/opt/mssql/restore_bak.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1'"]
       interval: 10s
@@ -20,7 +21,7 @@ services:
     restart: unless-stopped
 
   restore:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql-tools:latest
     depends_on:
       mssql:
         condition: service_healthy
@@ -28,11 +29,26 @@ services:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=SenhaForte123
     volumes:
-      - ../backups:/var/opt/mssql/backups
-      - ./restore_bak.sql:/var/opt/mssql/restore_bak.sql:ro
-    entrypoint: >
-      bash -lc "/opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P '$$MSSQL_SA_PASSWORD' -C -i /var/opt/mssql/restore_bak.sql
-      || /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P '$$MSSQL_SA_PASSWORD' -i /var/opt/mssql/restore_bak.sql"
+      - ./restore_bak.sql:/restore_bak.sql:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "$$MSSQL_SA_PASSWORD" -l 60 -b -i /restore_bak.sql
+
+  streamlit:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: streamlit_app
+    depends_on:
+      restore:
+        condition: service_completed_successfully
+    ports:
+      - "8501:8501"
+    volumes:
+      - ..:/app
+      - ../.streamlit:/app/.streamlit:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
 
 volumes:
   mssql_root:

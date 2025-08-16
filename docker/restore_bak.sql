@@ -18,6 +18,6 @@ RESTORE DATABASE [SalesDB]
 FROM DISK = N'/var/opt/mssql/backups/AdventureWorks2022.bak'
 WITH 
     MOVE N'AdventureWorks2022'     TO N'/var/opt/mssql/data/SalesDB.mdf',
-    MOVE N'AdventureWorks2022_log' TO N'/var/opt/mssql/log/SalesDB_log.ldf',
+    MOVE N'AdventureWorks2022_log' TO N'/var/opt/mssql/data/SalesDB_log.ldf',
     REPLACE, RECOVERY, STATS = 5;
 GO
