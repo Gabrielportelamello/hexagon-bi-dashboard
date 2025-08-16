@@ -1,5 +1,15 @@
 # Instruções para rodar o projeto
 
+## 📋 Requisitos Obrigatórios
+Antes de começar, você precisa ter instalado e configurado:
+
+- **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**  
+  - No Windows, habilite o backend **WSL 2** nas configurações do Docker Desktop.  
+  - Certifique-se de que o Docker Desktop esteja **aberto** antes de rodar os comandos.
+- **Git** ([instalar no Windows](https://git-scm.com/download/win) ou winget --id Git.Git -e --source winget | `sudo apt install git` no Linux)
+- Conexão com a internet (para baixar o arquivo `.bak`)
+- Qqualquer problema com wsl consultar se esta atualizado.
+
 ## 1 Clonar o repositório
 git clone https://github.com/Gabrielportelamello/hexagon-bi-dashboard.git
 cd hexagon-bi-dashboard
