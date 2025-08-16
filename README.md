@@ -1,4 +1,5 @@
 # Instruções para rodar o projeto
+Execute os comandos abaixo no terminal (PowerShell, CMD ou Linux).
 
 ## 📋 Requisitos Obrigatórios
 Antes de começar, você precisa ter instalado e configurado:
@@ -10,8 +11,9 @@ Antes de começar, você precisa ter instalado e configurado:
 - Conexão com a internet (para baixar o arquivo `.bak`)
 - Qualquer problema com wsl consultar se esta atualizado.
 
-## 1 Clonar o repositório
+## 1 Clonar o repositório e entrar na pasta raiz do projeto
 - git clone https://github.com/Gabrielportelamello/hexagon-bi-dashboard.git
+
 - cd hexagon-bi-dashboard
 
 ## 2 Baixar o arquivo .bak do AdventureWorks
@@ -47,13 +49,6 @@ docker compose -f docker/mssql-compose.yml up -d --build
 
 ## 4️ Copiar o .bak para dentro do container
 docker cp .\backups\AdventureWorks2022.bak mssql2022:/var/opt/mssql/backups/
-
-
-
-⚠ Importante: O nome mssql deve ser igual ao container_name configurado no docker-compose.yml.
-Para confirmar, rode:
-
-docker ps
 
 ## 5️ Restaurar o banco SalesDB
 
