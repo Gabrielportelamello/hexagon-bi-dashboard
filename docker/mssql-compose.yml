@@ -18,34 +18,11 @@ services:
       retries: 30
     restart: unless-stopped
 
-  restore:
-  image: mcr.microsoft.com/mssql-tools:latest
-  depends_on:
-    mssql:
-      condition: service_healthy
-  environment:
-    - ACCEPT_EULA=Y
-    - MSSQL_SA_PASSWORD=SenhaForte123
-  volumes:
-    - ../backups:/backups
-    - ./restore_bak.sql:/restore_bak.sql:ro
-  entrypoint: ["/bin/sh", "-c"]
-  command: |
-    if [ ! -f /backups/AdventureWorks2022.bak ]; then
-      echo "Baixando backup AdventureWorks2022.bak..."
-      curl -L -o /backups/AdventureWorks2022.bak \
-        https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak
-    fi
-    /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "$$MSSQL_SA_PASSWORD" -l 60 -b -i /restore_bak.sql
-
   streamlit:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: streamlit_app
-    depends_on:
-      restore:
-        condition: service_completed_successfully
     ports:
       - "8501:8501"
     volumes:
